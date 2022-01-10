@@ -7,7 +7,7 @@ In order to set up a microservice exposing a fraud detection POST endpoint, foll
 
 1. get the code from the repository
 ```
-git clone https://github.com/cloudacademy/fraud-detection.git 
+git clone https://github.com/jattind/fraud-detection.git
 ```
 2. [download the dataset](https://clouda-labs-assets.s3-us-west-2.amazonaws.com/fraud-detection/creditcard.csv.zip) that will be used to train a transaction classifier. Unzip it and put the content (creditcard.csv) under folder data
 
@@ -58,3 +58,41 @@ i.e. one fraud probability per transaction list submitted
 nosetests
 ```
 from the repo root
+
+7. The flask_fraud_detect.py is a standalone flask app when run allows user to make training and detect POST calls instaed of running training as a program. To run as a flask app:
+```
+export FLASK_APP=src/flask_fraud_detect.py
+flask run
+```
+to run training
+```
+curl -X POST http://127.0.0.1:5000/training
+```
+
+to run predict. Create a script file check-fraud-probability.sh
+```
+#! /bin/bash
+
+curl -X POST http://127.0.0.1:5000/predict -H "Content-Type: application/json" --data-binary @- <<DATA
+{
+    "features": [
+    	[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+    	[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    ]
+}
+DATA
+```
+Same can be run as a Docker container. Create a Dockerfile as shown below, build and run the docker
+```
+FROM python:3.7
+
+EXPOSE 5001
+
+COPY fraud-detection /fraud-detection
+WORKDIR /fraud-detection
+RUN pip install -r requirements-new.txt
+
+
+ENTRYPOINT ["python3", "src/flask_fraud_detect.py"]
+```
+Note: when run as a docker contaner the POST url will change

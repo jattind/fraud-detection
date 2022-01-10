@@ -1,8 +1,13 @@
 from __future__ import unicode_literals
+import os
 import json
 from flask import Flask, request
-from sklearn.externals import joblib
-from settings import MODEL_FILENAME
+import joblib
+
+#from settings import MODEL_FILENAME
+
+PARENT_DIR_PATH = os.path.dirname(os.path.realpath(os.path.join(__file__, '..')))
+MODEL_FILENAME = os.path.join(PARENT_DIR_PATH, "models", "model.pickle")
 
 app = Flask("Fraud Detection")
 
